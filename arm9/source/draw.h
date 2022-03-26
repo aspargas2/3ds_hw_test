@@ -33,7 +33,7 @@
 #define CHR_HEIGHT 10
 #define CHR_WIDTH  6
 
-#define DBG_STEP_Y (CHR_HEIGHT + 2)
+#define DBG_STEP_Y CHR_HEIGHT
 #define DBG_STEP_X CHR_WIDTH
 #define DBG_END_Y  SCREEN_HEIGHT
 #define DBG_END_X  SCREEN_WIDTH_BOT

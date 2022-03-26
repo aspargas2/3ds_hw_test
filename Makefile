@@ -10,7 +10,7 @@ ARM9_BIN       = arm9/$(TARGET)_arm9.bin
 #ARM11_ENTRY = $(ARM11_LOAD)
 #ARM11_BIN   = arm11/$(TARGET)_arm11.bin
 
-.PHONY: all bins clean .FORCE
+.PHONY: all clean .FORCE
 .FORCE:
 
 all: $(TARGET).firm $(TARGET)_direct.firm

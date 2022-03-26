@@ -73,15 +73,16 @@ void ShiftScreen(u8* screen, int width, int shift, int bgcolor)
 
 void DrawCharacter(u8 *screen, int character, int x, int y, int color, int bgcolor)
 {
+	// char - 0x20 because non-essential parts of the font are trimmed off
+	u64 charData = font[character - 0x20];
+
 	for (int yy = 0; yy < CHR_HEIGHT; yy++) {
 		int xDisplacement = (x * BYTES_PER_PIXEL * SCREEN_HEIGHT);
 		int yDisplacement = ((SCREEN_HEIGHT - (y + yy) - 1) * BYTES_PER_PIXEL);
 		u8 *screenPos = screen + xDisplacement + yDisplacement;
 
-		// char - 0x20 because non-essential parts of the font are trimmed off
-		u8 charPos = font[(character - 0x20) * (CHR_HEIGHT * CHR_WIDTH / 8) + yy]; 
-		for (int xx = CHR_WIDTH - 1; xx >= 0; xx--) {
-			if ((charPos >> xx) & 1) {
+		for (int xx = 0; xx < CHR_WIDTH; xx++) {
+			if ((charData >> ((yy * CHR_WIDTH) + xx)) & 1) {
 				*(screenPos + 0) = color >> 16;         // B
 				*(screenPos + 1) = color >> 8;          // G
 				*(screenPos + 2) = color & 0xFF;        // R
@@ -103,14 +104,14 @@ void DebugDrawString(const char *str, int color, int bgcolor)
 			debugypos += DBG_STEP_Y;
 			if (debugypos >= DBG_END_Y) {
 				debugypos = (DBG_END_Y - (DBG_END_Y % DBG_STEP_Y) - DBG_STEP_Y);
-				ShiftScreen(top_screen0, DBG_END_X, DBG_STEP_Y, bgcolor);
-				if (top_screen0 != top_screen1)
-					ShiftScreen(top_screen1, DBG_END_X, DBG_STEP_Y, bgcolor);
+				ShiftScreen(bot_screen0, DBG_END_X, DBG_STEP_Y, bgcolor);
+				if (bot_screen0 != bot_screen1)
+					ShiftScreen(bot_screen1, DBG_END_X, DBG_STEP_Y, bgcolor);
 			}
 		}
 		if (str[i] != '\n') {
-			DrawCharacter(top_screen0, str[i], debugxpos, debugypos, color, bgcolor);
-			DrawCharacter(top_screen1, str[i], debugxpos, debugypos, color, bgcolor);
+			DrawCharacter(bot_screen0, str[i], debugxpos, debugypos, color, bgcolor);
+			DrawCharacter(bot_screen1, str[i], debugxpos, debugypos, color, bgcolor);
 			debugxpos += DBG_STEP_X;
 		}
 	}
@@ -121,7 +122,7 @@ void DebugClear()
 	debugxpos = 0;
 	debugypos = 0;
 
-	ClearScreenFull(true, false);
+	ClearScreenFull(false, true);
 }
 
 void DebugColor(u32 color, const char* message)

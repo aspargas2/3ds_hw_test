@@ -52,7 +52,7 @@ int main(int argc, char *argv[])
 {
 	InitScreenFbs(argc, argv);
 	ClearScreenFull(true, true);
-	DebugClear();
+	Debug("Hello from ARM9\n");
 
 	//i2cWriteRegister(I2C_DEV_MCU, 0x29, 6);
 

@@ -4,7 +4,9 @@
 
 #define LOG_FILE "hwtest.log"
 
-bool InitLog();
-void DeinitLog();
+bool logReady();
+bool initLog();
+void deinitLog();
 
-bool LogWrite(const char* text);
+bool logWrite(const void* data, unsigned int btw);
+bool logWriteStr(const char* str);

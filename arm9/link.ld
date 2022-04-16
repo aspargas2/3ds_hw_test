@@ -16,8 +16,6 @@ SECTIONS
 	.bss        : ALIGN(4) { __bss_start = .; *(.bss* COMMON); . = ALIGN(4); __bss_end = .;}
 
 	. = ALIGN(4);
-
-	end = ABSOLUTE(.);
 }
 
 __loaded_size = __loaded_end - __loaded_start;

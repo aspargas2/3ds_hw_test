@@ -1,5 +1,4 @@
-#ifndef HID_H
-#define HID_H
+#pragma once
 
 #include "common.h"
 
@@ -22,5 +21,3 @@
 #define BUTTON_HELD(b, m) (~(b) & (m))
 #define BUTTON_PRESSED(b, o, m) ((~(b) & (o)) & (m))
 #define BUTTON_CHANGED(b, o, m) (((b) ^ (o)) & (m))
-
-#endif

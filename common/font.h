@@ -2,6 +2,11 @@
 
 #include "common.h"
 
+#define CHR_HEIGHT 10
+#define CHR_WIDTH  6
+
+// Generated with an ugly python script; each u64 is a character's font data
+
 static const u64 font[] = {
 	/*0x0, 0x7adce1ce1780, 0x7b3b7fb7f780, 0x873ef94000, 0x873e708000, 0x708db671c000, 0x708fbe708000, 0x31e300000,
 	0xffffffce1cfffff, 0xc4a148c000, 0xfffff3b5eb73fff, 0x72289e128f00, 0x21c21c8a2700, 0x18e208a28600, 0xdb6924f24f00, 0x22a73672a200,

@@ -1,4 +1,4 @@
-TARGET   = 3ds_hw_test_arm9
+TARGET   = 3ds_hw_test_arm11
 
 export COMMIT := $(shell git rev-parse --short HEAD)
 
@@ -14,9 +14,9 @@ OBJS    = $(subst ../common/,build/cmn.,$(subst source,build,$(SFILES:.S=.o) $(C
 DEPS    = $(OBJS:.o=.d)
 INCLUDE = $(foreach dir, $(INCLUDES), -I$(CURDIR)/$(dir))
 
-ARCH    = -DARM9 -mcpu=arm946e-s -march=armv5te -mthumb -mlittle-endian -mthumb-interwork
+ARCH    = -DARM11 -march=armv6k -mtune=mpcore -mlittle-endian -marm -mtp=soft
 ASFLAGS = $(ARCH) $(COMMON_ARCH) $(INCLUDE)
-CFLAGS  = -DCOMMIT="\"$(COMMIT)\"" -Wall -Wextra -Os -flto $(ARCH) $(INCLUDE) -fno-stack-protector
+CFLAGS  = -DCOMMIT="\"$(COMMIT)\"" -Wall -Wextra -Os $(ARCH) $(INCLUDE) -fno-stack-protector
 
 CC      = arm-none-eabi-gcc
 OBJCOPY = arm-none-eabi-objcopy
@@ -26,8 +26,7 @@ OBJCOPY = arm-none-eabi-objcopy
 all: $(TARGET).bin
 
 $(TARGET).elf: $(OBJS)
-	$(CC) -T link.ld -flto -Wl,--nmagic,--use-blx $^ -o $@ -nostartfiles -specs=nosys.specs -specs=nano.specs
-	#$(CC) -T link.ld -Wl,--nmagic $^ -o $@ -nostartfiles -nostdlib
+	$(CC) -T link.ld -Wl,--nmagic,--use-blx $^ -o $@ -nostartfiles -specs=nosys.specs -specs=nano.specs
 
 $(BUILD)/%.o: $(SOURCE)/%.c
 	@mkdir -p "$(@D)"

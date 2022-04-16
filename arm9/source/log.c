@@ -1,14 +1,18 @@
 #include "log.h"
-#include "draw.h"
 
 #include "fatfs/ff.h"
 
+#include <arm.h>
+
 static FATFS fs;
 static FIL logfile;
-static bool logready;
+static bool logready = false;
 
-bool InitLog()
-{
+bool logReady() {
+	return logready;
+}
+
+bool initLog() {
 	if (f_mount(&fs, "0:", 1) != FR_OK)
 		return false;
 
@@ -21,17 +25,25 @@ bool InitLog()
 	return true;
 }
 
-void DeinitLog()
-{
+void deinitLog() {
+	logready = false;
 	f_close(&logfile);
 	f_unmount("0:");
-	logready = false;
 }
 
-bool LogWrite(const char* text)
-{
+bool logWrite(const void* data, unsigned int btw) {
+	if (!logready)
+		return false;
+
 	UINT bw;
-	const UINT btw = strlen(text);
-	return logready && (f_write(&logfile, text, btw, &bw) == FR_OK) && (bw == btw);
+	u32 irqState = ARM_EnterCritical();
+	bool ret = (f_write(&logfile, data, btw, &bw) == FR_OK) && (bw == btw);
+	ARM_LeaveCritical(irqState);
+
+	return ret;
+}
+
+bool logWriteStr(const char* str) {
+	return logready && logWrite(str, strlen(str));
 }
 

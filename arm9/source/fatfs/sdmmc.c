@@ -32,7 +32,8 @@
 #include <errno.h>
 
 #include "sdmmc.h"
-//#include "DrawCharacter.h"
+
+#include <arm.h>
 
 #define DATA32_SUPPORT
 
@@ -40,14 +41,6 @@
 #define FALSE 0
 
 #define NO_INLINE __attribute__ ((noinline))
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-	void waitcycles(uint32_t val);
-#ifdef __cplusplus
-};
-#endif
 
 struct mmcdevice handelNAND;
 struct mmcdevice handelSD;
@@ -397,7 +390,7 @@ int Nand_Init()
 	handelNAND.devicenumber = 1;
 
 	inittarget(&handelNAND);
-	waitcycles(0xF000);
+	ARM_WaitCycles(0xF000);
 
 	sdmmc_send_command(&handelNAND,0,0);
 
@@ -459,7 +452,7 @@ int SD_Init()
 
 	inittarget(&handelSD);
 
-	waitcycles(1u << 22); //Card needs a little bit of time to be detected, it seems FIXME test again to see what a good number is for the delay
+	ARM_WaitCycles(1u << 22); //Card needs a little bit of time to be detected, it seems FIXME test again to see what a good number is for the delay
 
 	//If not inserted
 	if (!(*((volatile uint16_t*)(SDMMC_BASE + REG_SDSTATUS0)) & TMIO_STAT0_SIGSTATE)) return 5;

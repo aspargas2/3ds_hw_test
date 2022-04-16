@@ -1,8 +1,11 @@
 #include "memtests.h"
+#include <arm.h>
 
 .section .text
-.thumb
+.arm
 
+memtest_fail_own_address_thunk:
+	mov r3, r2
 memtest_fail:
 	cmp r1, #MAX_ERRORS
 	bhs memtest_fail_return
@@ -20,10 +23,7 @@ memtest_fail:
 	add r1, #1
 	bx lr
 
-.global memtest_walking_ones
-.thumb_func
-memtest_walking_ones: @(void* start_addr, void* end_addr)
-
+asm_func memtest_walking_ones
 	push {r4-r7,lr}
 	mov r12, r1
 	mov r1, #0
@@ -42,9 +42,7 @@ memtest_walking_ones: @(void* start_addr, void* end_addr)
 			str r5, [r2]
 			ldr r4, [r7]
 			cmp r3, r4
-			beq walking_ones_forward_skip_fail
-			bl memtest_fail
-			walking_ones_forward_skip_fail:
+			blne memtest_fail
 			lsl r6, #1
 			b walking_ones_forward_loop
 		walking_ones_forward_break:
@@ -57,9 +55,7 @@ memtest_walking_ones: @(void* start_addr, void* end_addr)
 			str r5, [r2]
 			ldr r4, [r7]
 			cmp r3, r4
-			beq walking_ones_backward_skip_fail
-			bl memtest_fail
-			walking_ones_backward_skip_fail:
+			blne memtest_fail
 			lsl r6, #1
 			b walking_ones_backward_loop
 		walking_ones_backward_break:
@@ -67,31 +63,25 @@ memtest_walking_ones: @(void* start_addr, void* end_addr)
 		@ Advance the initial position by 8KB. memtest86+ uses 1MB steps here, but some entire
 		@ memory regions on the 3DS are smaller than that. 8KB is probably much smaller than
 		@ this needs to be, but the test still finishes within seconds on FCRAM so it's fine.
-		mov r6, #1
-		lsl r6, #13
-		add r7, r6
+		add r7, #(1<<13)
 		cmp r7, r12
 		blo walking_ones_outer_loop
 
 		@ Rerun the entire test with the inverse of the initial pattern
 		mov r7, r0
-		mvn r3, r3
+		mvns r3, r3
 		bmi walking_ones_outer_loop
 
 	mov r0, r1
 	pop {r4-r7,pc}
 
-.global memtest_own_address
-.thumb_func
-memtest_own_address: @(void* start_addr, void* end_addr)
-
+asm_func memtest_own_address
 	push {r4,lr}
 	mov r12, r1
 	mov r2, r0
 
 	own_address_fill_loop:
-		str r2, [r2]
-		add r2, #4
+		str r2, [r2], #4
 		cmp r2, r12
 		blo own_address_fill_loop
 
@@ -101,10 +91,7 @@ memtest_own_address: @(void* start_addr, void* end_addr)
 	own_address_check_loop:
 		ldr r4, [r2]
 		cmp r2, r4
-		beq own_address_skip_fail
-		mov r3, r2
-		bl memtest_fail
-		own_address_skip_fail:
+		blne memtest_fail_own_address_thunk
 		add r2, #4
 		cmp r2, r12
 		blo own_address_check_loop
@@ -115,8 +102,7 @@ memtest_own_address: @(void* start_addr, void* end_addr)
 moving_inversions_fill:
 	mov r2, r0
 	moving_inversions_fill_loop:
-		str r3, [r2]
-		add r2, #4
+		str r3, [r2], #4
 		cmp r2, r12
 		blo moving_inversions_fill_loop
 	bx lr
@@ -127,11 +113,8 @@ moving_inversions_bottom_up:
 	moving_inversions_bottom_up_loop:
 		ldr r4, [r2]
 		cmp r3, r4
-		beq moving_inversions_bottom_up_skip_fail
-		bl memtest_fail
-		moving_inversions_bottom_up_skip_fail:
-		str r5, [r2]
-		add r2, #4
+		blne memtest_fail
+		str r5, [r2], #4
 		cmp r2, r12
 		blo moving_inversions_bottom_up_loop
 	pop {pc}
@@ -143,18 +126,13 @@ moving_inversions_top_down:
 		sub r2, #4
 		ldr r4, [r2]
 		cmp r3, r4
-		beq moving_inversions_top_down_skip_fail
-		bl memtest_fail
-		moving_inversions_top_down_skip_fail:
+		blne memtest_fail
 		str r5, [r2]
 		cmp r2, r0
 		bhi moving_inversions_top_down_loop
 	pop {pc}
 
-.global memtest_moving_inversions_ones_zeros
-.thumb_func
-memtest_moving_inversions_ones_zeros: @(void* start_addr, void* end_addr)
-
+asm_func memtest_moving_inversions_ones_zeros
 	push {r4-r6,lr}
 	mov r12, r1
 	mov r1, #0
@@ -171,19 +149,16 @@ memtest_moving_inversions_ones_zeros: @(void* start_addr, void* end_addr)
 		bl moving_inversions_top_down
 		mov r3, r5
 		mvn r5, r3
-		sub r6, #1
+		subs r6, #1
 		bne moving_inversions_ones_zeros_loop
 	mov r3, r5
-	mvn r5, r3
+	mvns r5, r3
 	bpl moving_inversions_ones_zeros_repeat
 
 	mov r0, r1
 	pop {r4-r6,pc}
 
-.global memtest_moving_inversions_8bit_walking
-.thumb_func
-memtest_moving_inversions_8bit_walking: @(void* start_addr, void* end_addr)
-
+asm_func memtest_moving_inversions_8bit_walking
 	push {r4-r7,lr}
 	ldr r3, =0x01010101
 	mov r12, r1
@@ -204,52 +179,37 @@ memtest_moving_inversions_8bit_walking: @(void* start_addr, void* end_addr)
 				bl moving_inversions_top_down
 				mov r3, r5
 				mvn r5, r3
-				sub r6, #1
+				subs r6, #1
 				bne moving_inversions_8bit_walking_loop
 			mov r3, r5
 			mvn r5, r3
-			sub r7, #1
+			subs r7, #1
 			bne moving_inversions_8bit_walking_repeat
 
 		lsl r3, #1
-		lsl r4, r3, #24
+		lsls r4, r3, #24
 		bne moving_inversions_8bit_walking_outer_loop
 
 	mov r0, r1
 	pop {r4-r7,pc}
 
-.global memtest_bit_fade
-.thumb_func
-memtest_bit_fade: @(void* start_addr, void* end_addr)
+asm_func memtest_bit_fade_check
+	push {r4,lr}
 
-	push {r4-r5,lr}
+	mov r3, r2
+	mov r2, r0
 	mov r12, r1
 	mov r1, #0
-	mov r3, #0
-	mov r5, r0
 
-	bit_fade_repeat:
-		mov r0, r5
-		bl moving_inversions_fill
-		ldr r0, =(1000 * 1000 * 240 * 14)
-		@ ~= 200 seconds, this waitcycles impl is broken
-		bl waitcycles
-		mov r2, r5
-		bit_fade_check_loop:
-			ldr r4, [r2]
-			cmp r3, r4
-			beq bit_fade_skip_fail
-			bl memtest_fail
-			bit_fade_skip_fail:
-			str r5, [r2]
-			add r2, #4
-			cmp r2, r12
-			blo bit_fade_check_loop
-		mvn r3, r3
-		bmi bit_fade_repeat
+	bit_fade_check_loop:
+		ldr r4, [r2], #4
+		cmp r3, r4
+		blne memtest_fail
+		cmp r2, r12
+		blo bit_fade_check_loop
 
 	mov r0, r1
-	pop {r4-r5,pc}
+	pop {r4,pc}
 
 .ltorg
 

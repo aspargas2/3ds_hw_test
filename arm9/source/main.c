@@ -1,17 +1,21 @@
 #include "common.h"
-#include "draw.h"
 #include "hid.h"
 #include "log.h"
 #include "i2c.h"
-#include "memtests.h"
+#include "timer.h"
+#include "irq.h"
+#include "irqHandlers.h"
+
+#include <memtests.h>
+#include <power.h>
+#include <pxi.h>
+#include <debug.h>
+#include <console.h>
+#include <arm.h>
 
 #include <stdlib.h>
 
-static void mcu_poweroff()
-{
-	i2cWriteRegister(I2C_DEV_MCU, 0x20, 1 << 0);
-	while (1) ;
-}
+#define TITLE_STRING ("===== 3ds_hw_test by aspargas2 - commit " COMMIT " =====\n")
 
 static u32 wait_any_key_pressed()
 {
@@ -23,83 +27,133 @@ static u32 wait_any_key_pressed()
 
 static void wait_any_key_poweroff()
 {
-	Debug("Press any key to poweroff.\n");
+	consolePrint("Press any key to poweroff.\n");
 	wait_any_key_pressed();
-	mcu_poweroff();
+	mcuPoweroff();
 }
 
-static void LogDebug(const char* message) {
-	LogWrite(message);
-	Debug(message);
-}
-
-static void LogErrors(u32 n_errors) {
-	for (u32 i = 0; i < min(MAX_ERRORS, n_errors) * 3; i += 3) {
+/*static void LogErrors(u32 n_errors) {
+	for (u32 i = 0; i < min(MAX_ERRORS, n_errors); i++) {
 		char str[9];
-		itoa(errors_buffer[i], str, 16);
+		itoa(errors_buffer[i].address, str, 16);
 		LogWrite(str);
 		LogWrite(": ");
-		itoa(errors_buffer[i + 1], str, 16);
+		itoa(errors_buffer[i].original, str, 16);
 		LogWrite(str);
 		LogWrite("->");
-		itoa(errors_buffer[i + 2], str, 16);
+		itoa(errors_buffer[i].observed, str, 16);
 		LogWrite(str);
 		LogWrite("\n");
 	}
-}
+}*/
 
-int main(int argc, char *argv[])
-{
-	InitScreenFbs(argc, argv);
-	ClearScreenFull(true, true);
-	Debug("Hello from ARM9\n");
+static bool bootBarrierWithTimeout() {
+	bool ret;
 
-	//i2cWriteRegister(I2C_DEV_MCU, 0x29, 6);
+	PXI_SetRemote(PXI_BOOT_BARRIER);
+	startFullTimerCountup(FREQ_1024);
 
-	Debug("Initializing SD log... ");
-
-	bool uselog;
-	if ((uselog = InitLog())) {
-		Debug("success\n");
-	} else {
-		Debug("failed. SD log will not be written.\n");
-	}
-	
-	LogWrite("\n\n\n");
-	LogDebug("=== 3ds_hw_test by aspargas2 - commit " COMMIT " ===\n");
-	Debug("Press B to power off, any other button to begin\n");
-	if (wait_any_key_pressed() & BUTTON_B) {
-		DeinitLog();
-		mcu_poweroff();
-	}
-
-	u32 n_errors;
-	char str[20];
-
-	for (u32 i = 0; i < N_REGIONS; i++) {
-		LogDebug("\nTesting ");
-		LogDebug(regions[i].name);
-		LogDebug(" ...\n");
-		for (u32 j = 0; j < N_TESTS; j++) {
-			LogDebug("Running ");
-			LogDebug(tests[j].name);
-			LogDebug("...\n");
-			n_errors = tests[j].func((void*) regions[i].start_addr, (void*) regions[i].start_addr + regions[i].size);
-			LogDebug("Done. ");
-			itoa(n_errors, str, 10);
-			LogDebug(str);
-			LogDebug(" errors detected.\n");
-			if (n_errors && uselog) {
-				Debug("Writing errors to SD log... ");
-				LogErrors(n_errors);
-				Debug("done\n");
-			}
+	while (1) {
+		if (PXI_GetRemote() == PXI_BOOT_BARRIER) {
+			ret = true;
+			break;
+		} else if (TIMER_VAL(1) > 3) {
+			ret = false;
+			break;
 		}
 	}
 
-	Debug("Deinitializing SD log... ");
-	DeinitLog();
-	Debug("done\n");
+	return ret;
+}
 
-	wait_any_key_poweroff();
+int main(/*int argc, char *argv[]*/) {
+	bool arm11dead, mainLoop = true;
+
+	PXI_Reset();
+	resetAllTimers();
+	disableAllInterrupts();
+	clearAllInterrupts();
+
+	if (!IS_O3DS)
+		// Enable Extended ARM9 Memory
+		(*(u8*)0x10000200) = 1;
+
+	if ((arm11dead = !bootBarrierWithTimeout()))
+		// Flash power LED red, as the screens are probably off
+		I2C_writeReg(I2C_DEV_CTR_MCU, 0x29, 6);
+
+	// Gives an interrupt around once a second, ensuring we can WFI without getting stuck forever
+	enableInterrupt(TIMER_INTERRUPT(0));
+
+	consolePrintColor(TITLE_STRING, COLOR_LIGHT_BLUE);
+	consolePrint("Hello from ARM9\nInitializing SD log... ");
+
+	if (initLog()) {
+		consolePrint("success\n");
+	} else {
+		consolePrint("failed. SD log will not be written.\n");
+	}
+
+	logWriteStr("\n\n\n");
+	logWriteStr(TITLE_STRING);
+
+	if (!arm11dead) {
+		enableInterrupt(PXI_RX_INTERRUPT);
+		ARM_EnableInterrupts();
+
+		//debugPrint("Entering main loop\n");
+
+		while (mainLoop) {
+			u32 pxiCmd = dequeuePxicmd();
+
+			switch(pxiCmd) {
+				case PXICMD_NONE:
+					ARM_WFI();
+					break;
+
+				case PXICMD_RUN_MEMTEST: {
+					u64* totalErrorsAddr = (u64*) dequeuePxicmd();
+					*totalErrorsAddr = testMemory(dequeuePxicmd(), dequeuePxicmd());
+					//ARM_BKPT();
+					break;
+				}
+
+				case PXICMD_LEGACY_BOOT:
+					mainLoop = false;
+					debugPrint("Deinitializing SD log... ");
+					deinitLog();
+					consolePrint("done\n");
+					break;
+
+				default:
+					debugPrintf("Got unknown PXI cmd from queue: %lx\n", pxiCmd);
+					break;
+			}
+
+			//debugPrintf("looped %x %x %x\n", *IRQ_IE, *IRQ_IF, *PXI_CNT);
+		}
+
+		ARM_DisableInterrupts();
+		PXI_Barrier(PXI_FIRMLAUNCH_BARRIER);
+	} else {
+		debugPrint("\nARM11 failed to boot, continuing independently\n\n");
+
+		consolePrint("Press B to power off, anything else to test memory\n");
+		if (wait_any_key_pressed() & BUTTON_B) {
+			deinitLog();
+			mcuPoweroff();
+		}
+
+		I2C_writeReg(I2C_DEV_CTR_MCU, 0x29, 1);
+		testMemory(ALL_MEMTEST_REGIONS, ALL_MEMTESTS);
+		I2C_writeReg(I2C_DEV_CTR_MCU, 0x29, 6);
+
+		debugPrint("Deinitializing SD log... ");
+		deinitLog();
+		consolePrint("done\n");
+
+		wait_any_key_poweroff();
+	}
+
+	while (1);
 }

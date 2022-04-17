@@ -33,6 +33,7 @@ xrqPrefetchAbort:
 	TRAP_ENTRY 3
 
 xrqDataAbort:
+	sub lr, lr, #4
 	TRAP_ENTRY 4
 
 xrqFIQ:

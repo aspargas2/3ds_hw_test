@@ -29,4 +29,4 @@ $(ARM11_BIN): .FORCE
 clean:
 	@$(MAKE) -C arm9 clean
 	@$(MAKE) -C arm11 clean
-	@rm -f $(TARGET).firm
+	@rm -f $(TARGET)*.firm

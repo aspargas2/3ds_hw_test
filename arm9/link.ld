@@ -4,7 +4,7 @@ ENTRY(_start)
 
 SECTIONS
 {
-	. = 0x00000000;
+	. = 0x00008000;
 	__loaded_start = .;
 	.text       : ALIGN(4) { *(.text.start) *(.text*) }
 	.rodata     : ALIGN(4) { *(.rodata*) }

@@ -11,10 +11,7 @@ static char strBuf[DEBUG_MAX_LEN + sizeof(ARM11_DEBUG_PREFIX)] = ARM11_DEBUG_PRE
 void logDebugPrintf(bool logOnly, const char* format, ...) {
 	va_list args;
 	va_start(args, format);
-
-	// TODO: refactor bootrom function definitions so an ugly funcpointer cast isn't needed here
-	int n = ((int(*)(char*, int, const char*, va_list)) BFN_VSNPRINTF)(strBuf + sizeof(ARM11_DEBUG_PREFIX) - 1, 512, format, args);
-
+	int n = bfnVsnprintf(strBuf + sizeof(ARM11_DEBUG_PREFIX) - 1, 512, format, args);
 	va_end(args);
 
 	if (n == 0)

@@ -15,6 +15,11 @@ SECTIONS
 	. = 0xFFF00000;
 	.bss        : ALIGN(4) { __bss_start = .; *(.bss* COMMON); . = ALIGN(4); __bss_end = .;}
 
+	/* (-1 - 0xFFFF) == 0xFFFF0000; had to express it like this to stop getting unnecessary
+	 * veneer functions when trying to call bootrom stuff. Linker bug? */
+	. = (-1 - 0xFFFF);
+	.bootrom (NOLOAD) : ALIGN(4) { *(.bootrom*); }
+
 	. = ALIGN(4);
 }
 

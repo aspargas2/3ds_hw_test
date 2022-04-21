@@ -111,7 +111,7 @@ asm_func _start
 	mov r1, #xrqVectorTable
 	ldr r2, =__loaded_size
 	ldr lr, =relocate_done
-	ldr pc, =BFN_CPUCPY
+	ldr pc, =bfnMemcpy32
 
 	relocate_done:
 
@@ -134,7 +134,7 @@ asm_func _start
 	mcr p15, 0, r0, c2, c0, 0 @ Data cacheable
 	mcr p15, 0, r0, c2, c0, 1 @ Inst cacheable
 
-	bl BFN_ENABLE_MPU
+	bl bfnEnableMPU
 
 	@ Fixes mounting of SDMC
 	ldr r0, =0x10000020
@@ -145,7 +145,7 @@ asm_func _start
 	mov r0, #0
 	ldr r1, =__bss_start
 	ldr r2, =__bss_size
-	bl BFN_CPUSET
+	bl bfnMemset32
 
 	mov r0, r9
 	mov r1, r10

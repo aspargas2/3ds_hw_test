@@ -4,12 +4,20 @@ ENTRY(__boot)
 
 MEMORY
 {
+    /* Virtual address where bootrom will be mappped to avoid veneers */
+    BOOTROM  (RX)  : ORIGIN = 0x17000000, LENGTH = 32K
     VRAMLOAD (RWX) : ORIGIN = 0x18100000, LENGTH = 1M
     HIGHRAM  (RWX) : ORIGIN = 0xFFFF0000, LENGTH = 4K
 }
 
 SECTIONS
 {
+    .bootrom (NOLOAD) : ALIGN(4K)
+    {
+        *(.bootrom*)
+        . = ALIGN(4K);
+    } >BOOTROM
+
     .text : ALIGN(4K)
     {
         __text_pa = LOADADDR(.text);

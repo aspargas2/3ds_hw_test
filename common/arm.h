@@ -1,7 +1,6 @@
 #pragma once
 
 #include "common.h"
-#include "bfn.h"
 
 /* Status Register flags */
 #define SR_USR_MODE	(0x10)
@@ -70,6 +69,8 @@
 
 #ifndef __ASSEMBLER__
 
+#include "bfn.h"
+
 // only accessible from ARM mode
 #define ARM_MCR(cp, op1, reg, crn, crm, op2)	asm_v( \
 	"MCR " #cp ", " #op1 ", %[R], " #crn ", " #crm ", " #op2 "\n\t" \
@@ -93,11 +94,11 @@
 	#define REG_ARM_PMR(off, type)	((volatile type*)(0x17E00000 + (off)))
 
 	static inline void ARM_ISB(void) {
-		((void (*)(void))(BFN_INSTSYNCBARRIER))();
+		bfnInstructionSynchronizationBarrier();
 	}
 
 	static inline void ARM_DMB(void) {
-		((void (*)(void))(BFN_DATAMEMBARRIER))();
+		bfnDataMemoryBarrier();
 	}
 
 	static inline void ARM_WFI(void) {
@@ -138,7 +139,7 @@
 #else
 
 	static inline void ARM_WFI(void) {
-		((void (*)(void))(BFN_WFI))();
+		bfnWFI();
 	}
 
 #endif
@@ -148,7 +149,7 @@
  * instructions before this instruction complete.
  */
 static inline void ARM_DSB(void) {
-	((void (*)(void))(BFN_DATASYNCBARRIER))();
+	bfnDataSynchronizationBarrier();
 }
 
 /* CPU ID */
@@ -164,11 +165,11 @@ static inline u32 ARM_CoreID(void) {
 
 /* Status register management */
 static inline u32 ARM_EnterCritical(void) {
-	return ((u32 (*)(void))(BFN_ENTERCRITICALSECTION))();
+	return bfnEnterCriticalSection();
 }
 
 static inline void ARM_LeaveCritical(u32 stat) {
-	((void (*)(u32))(BFN_LEAVECRITICALSECTION))(stat);
+	bfnLeaveCriticalSection(stat);
 }
 
 static inline void ARM_DisableInterrupts(void) {
@@ -181,42 +182,42 @@ static inline void ARM_EnableInterrupts(void) {
 
 /* Cache functions */
 static inline void ARM_InvIC(void) {
-	((void (*)(void))(BFN_INVALIDATE_ICACHE))();
+	bfnInvalidateICache();
 }
 
 static inline void ARM_InvIC_Range(void *base, u32 len) {
-	((void (*)(u32, u32))(BFN_INVALIDATE_ICACHE_RANGE))((u32)base, len);
+	bfnInvalidateICacheRange(base, len);
 	#ifdef ARM11 // make sure to also invalidate the branch target cache
-	((void (*)(u32, u32))(BFN_INVALIDATE_BT_CACHE_RANGE))((u32)base, len);
+	invalidateBranchTargetCacheRange(base, len);
 	#endif
 }
 
 static inline void ARM_InvDC(void) {
-	((void (*)(void))(BFN_INVALIDATE_DCACHE))();
+	bfnInvalidateDCache();
 }
 
 static inline void ARM_InvDC_Range(void *base, u32 len) {
-	((void (*)(u32, u32))(BFN_INVALIDATE_DCACHE_RANGE))((u32)base, len);
+	bfnInvalidateDCacheRange(base, len);
 }
 
 static inline void ARM_WbDC(void) {
-	((void (*)(void))(BFN_WRITEBACK_DCACHE))();
+	bfnWritebackDCache();
 }
 
 static inline void ARM_WbDC_Range(void *base, u32 len) {
-	((void (*)(u32, u32))(BFN_WRITEBACK_DCACHE_RANGE))((u32)base, len);
+	bfnWritebackDCacheRange(base, len);
 }
 
 static inline void ARM_WbInvDC(void) {
-	((void (*)(void))(BFN_WRITEBACK_INVALIDATE_DCACHE))();
+	bfnWritebackInvalidateDCache();
 }
 
 static inline void ARM_WbInvDC_Range(void *base, u32 len) {
-	((void (*)(u32, u32))(BFN_WRITEBACK_INVALIDATE_DCACHE_RANGE))((u32)base, len);
+	bfnWritebackInvalidateDCacheRange(base, len);
 }
 
 static inline void ARM_WaitCycles(u32 cycles) {
-	((void (*)(u32))(BFN_WAITCYCLES))(cycles);
+	bfnWaitCycles(cycles);
 }
 
 static inline void ARM_BKPT(void) {

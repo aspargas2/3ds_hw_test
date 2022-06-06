@@ -188,7 +188,7 @@ static inline void ARM_InvIC(void) {
 static inline void ARM_InvIC_Range(void *base, u32 len) {
 	bfnInvalidateICacheRange(base, len);
 	#ifdef ARM11 // make sure to also invalidate the branch target cache
-	invalidateBranchTargetCacheRange(base, len);
+	bfnInvalidateBranchTargetCacheRange(base, len);
 	#endif
 }
 

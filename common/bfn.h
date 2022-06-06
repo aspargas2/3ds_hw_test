@@ -17,7 +17,7 @@ void bfnDisableMPU(void);
 
 // sets CR0 to its reset state (MPU & caches disabled, high vectors, TCMs enabled)
 // invalidates both instruction and data caches (without previously writing back!!)
-void resetControlRegisters(void);
+void bfnResetControlRegisters(void);
 
 #else
 
@@ -25,8 +25,8 @@ void bfnInstructionSynchronizationBarrier(void);
 
 void bfnDataMemoryBarrier(void);
 
-void invalidateBranchTargetCache(void);
-void invalidateBranchTargetCacheRange(void* start, u32 len);
+void bfnInvalidateBranchTargetCache(void);
+void bfnInvalidateBranchTargetCacheRange(void* start, u32 len);
 
 // seems to be perfectly compatible with regular library vsnprintf
 int bfnVsnprintf(char* s, int n, const char* format, va_list arg);

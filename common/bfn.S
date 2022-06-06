@@ -27,7 +27,7 @@
 .org 0x0AC0; asm_func bfnInvalidateICacheRange
 .org 0x0C38; asm_func bfnEnableMPU
 .org 0x0C48; asm_func bfnDisableMPU
-.org 0x0C58; asm_func resetControlRegisters
+.org 0x0C58; asm_func bfnResetControlRegisters
 
 #else // ARM11; .bootrom linked at 0x10000
 
@@ -48,8 +48,8 @@
 .org 0x144C; asm_func bfnInvalidateICache
 .org 0x1458; asm_func bfnInvalidateICacheRange
 .org 0x1490; asm_func bfnInstructionSynchronizationBarrier
-.org 0x14E8; asm_func invalidateBranchTargetCache
-.org 0x14F4; asm_func invalidateBranchTargetCacheRange
+.org 0x14E8; asm_func bfnInvalidateBranchTargetCache
+.org 0x14F4; asm_func bfnInvalidateBranchTargetCacheRange
 .org 0x16E4; asm_func bfnMemset32
 .org 0x1730; asm_func bfnMemcpy32
 .org 0x1A38; asm_func bfnWaitCycles

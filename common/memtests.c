@@ -82,7 +82,7 @@ static bool checkBitFade(u32 maxRegion) {
 				}
 
 				if (pattern == 0) {
-					memset((void*) startAddr, ~0, size);
+					bfnMemset32(~0, (u32*) startAddr, size);
 					bitFadeTimers[regionIndex] = (getFullTimerTicks() + BIT_FADE_DELAY) & ~1ULL;
 					ret = true;
 				} else {
@@ -144,7 +144,7 @@ u64 testMemory(u32 regions, u32 tests) {
 
 			if (testIndex == MEMTEST_BIT_FADE) {
 				debugPrintf("Setting up %s...\n", memtests[MEMTEST_BIT_FADE].name);
-				memset((void*) startAddr, 0, size);
+				bfnMemset32(0, (u32*) startAddr, size);
 				bitFadeTimers[regionIndex] = (getFullTimerTicks() + BIT_FADE_DELAY) | 1ULL;
 				break;
 			}

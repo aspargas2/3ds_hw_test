@@ -11,7 +11,7 @@ memtest_fail:
 	bhs memtest_fail_return
 
 	push {r5,r6}
-	mov r5, #12
+	mov r5, #ERROR_STRUCT_SIZE
 	mov r6, r1
 	mul r6, r5
 	ldr r5, =errors_buffer
@@ -217,4 +217,4 @@ asm_func memtest_bit_fade_check
 
 .global errors_buffer
 errors_buffer:
-.space (MAX_ERRORS * 12)
+.space (MAX_ERRORS * ERROR_STRUCT_SIZE)

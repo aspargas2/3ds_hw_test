@@ -2,8 +2,9 @@
 
 #include "common.h"
 
-// Must have enough space in BSS to store 3*MAX_ERRORS*sizeof(u32)
+// Must have enough space in BSS to store MAX_ERRORS * ERROR_STRUCT_SIZE (struct defined below)
 #define MAX_ERRORS 128
+#define ERROR_STRUCT_SIZE 12
 
 // 3 minutes
 #define BIT_FADE_DELAY (3ULL * 60ULL * (67027964ULL / 1024ULL))
@@ -61,6 +62,7 @@ typedef struct {
 	u32 original;
 	u32 observed;
 } PACKED_STRUCT MemtestError;
+_Static_assert(ERROR_STRUCT_SIZE == sizeof(MemtestError));
 
 // Returns total errors detected
 u64 testMemory(u32 regions, u32 tests);

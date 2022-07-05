@@ -6,6 +6,12 @@
 #endif
 #endif
 
+#ifdef ARM9
+#ifdef ARM11
+#error "Something is very wrong"
+#endif
+#endif
+
 #define BIT(x) (1 << (x))
 
 #ifdef __ASSEMBLER__

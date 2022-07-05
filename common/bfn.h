@@ -36,8 +36,11 @@ int bfnVsnprintf(char* s, int n, const char* format, va_list arg);
 // delays execution time by cycles
 void bfnWaitCycles(u32 cycles);
 
-u32 bfnMemset32(u32 val, u32* dest, u32 count);
-u32 bfnMemcpy32(u32* src, u32* dest, u32 count);
+u32* bfnMemset32(u32 val, u32* dest, u32 count);
+u32* bfnMemcpy32(const u32* src, u32* dest, u32 count);
+
+void bfnMemset(void* dest, u8 val, u32 count);
+void bfnMemcpy(const void* src, void* dest, u32 count);
 
 // disables interrupts and returns the old irq state
 u32 bfnEnterCriticalSection(void);

@@ -32,21 +32,6 @@ static void wait_any_key_poweroff()
 	mcuPoweroff();
 }
 
-/*static void LogErrors(u32 n_errors) {
-	for (u32 i = 0; i < min(MAX_ERRORS, n_errors); i++) {
-		char str[9];
-		itoa(errors_buffer[i].address, str, 16);
-		LogWrite(str);
-		LogWrite(": ");
-		itoa(errors_buffer[i].original, str, 16);
-		LogWrite(str);
-		LogWrite("->");
-		itoa(errors_buffer[i].observed, str, 16);
-		LogWrite(str);
-		LogWrite("\n");
-	}
-}*/
-
 static bool bootBarrierWithTimeout() {
 	bool ret;
 

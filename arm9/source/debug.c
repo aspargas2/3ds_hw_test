@@ -1,5 +1,6 @@
 #include "debug.h"
 #include "console.h"
+#include "smalllib.h"
 
 #include <arm.h>
 
@@ -66,28 +67,45 @@ void logDebugPrintf(bool logOnly, const char* format, ...) {
 					debugNPrint(logOnly, va_arg(args, char*), -1);
 					format += 2;
 					continue;
-				case 'd':
-					// TODO: make this work
-					/*if (lcount > 1)
-						illtoa(va_arg(args, s64), strbuf, 10);
-					else*/
-						itoa(va_arg(args, s32), strbuf, 10);
+				case 'd': {
+					s32 arg;
+					if (lcount > 1) {
+						s64 arg64 = va_arg(args, s64);
+						if ((arg64 < (s64) INT32_MIN) || (arg64 > (s64) INT32_MAX))
+							goto default_;
+						else
+							arg = (s32) arg64;
+					} else
+						arg = va_arg(args, s32);
+					itoadec(arg, strbuf);
 					debugNPrint(logOnly, strbuf, 30);
 					format += 2;
 					continue;
-				case 'u':
-					/*if (lcount > 1)
-						ulltoa(va_arg(args, u64), strbuf, 10);
-					else*/
-						utoa(va_arg(args, u32), strbuf, 10);
+				}
+				case 'u': {
+					u32 arg;
+					if (lcount > 1) {
+						u64 arg64 = va_arg(args, u64);
+						if (arg64 > (u64) UINT32_MAX)
+							goto default_;
+						else
+							arg = (u32) arg64;
+					} else
+						arg = va_arg(args, u32);
+					utoadec(arg, strbuf);
 					debugNPrint(logOnly, strbuf, 30);
 					format += 2;
 					continue;
+				}
 				case 'x':
-					/*if (lcount > 1)
-						ulltoa(va_arg(args, u64), strbuf, 16);
-					else*/
-						utoa(va_arg(args, u32), strbuf, 16);
+					if (lcount > 1) {
+						u64 arg = va_arg(args, u64);
+						utoahex(arg >> 32, strbuf);
+						if (*strbuf != '0')
+							debugNPrint(logOnly, strbuf, 30);
+						utoahex((u32) arg, strbuf);
+					} else
+						utoahex(va_arg(args, u32), strbuf);
 					debugNPrint(logOnly, strbuf, 30);
 					format += 2;
 					continue;
@@ -95,6 +113,7 @@ void logDebugPrintf(bool logOnly, const char* format, ...) {
 					lcount++;
 					format++;
 					goto codeswitch;
+				default_:
 				default:
 					format -= lcount;
 					continue;

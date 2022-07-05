@@ -25,17 +25,16 @@ static void shiftRect(u16* screen, int x, int y, int width, int height, int shif
 
 void drawCharacter(u16* screen, char character, int x, int y, u16 color) {
 	// char - 0x20 because non-essential parts of the font are trimmed off
-	u64 charData = font[character - 0x20];
+	u32* charData = (u32*) (font + character - 0x20);
 
-	for (int yy = 0; yy < CHR_HEIGHT; yy++) {
-		int xDisplacement = x * SCREEN_HEIGHT;
-		int yDisplacement = SCREEN_HEIGHT - (y + yy) - 1;
-		u16 *screenPos = screen + xDisplacement + yDisplacement;
-
-		for (int xx = 0; xx < CHR_WIDTH; xx++) {
-			if ((charData >> ((yy * CHR_WIDTH) + xx)) & 1)
+	for (int xx = 0; xx < CHR_WIDTH; xx++) {
+		int xDisplacement = (x + xx) * SCREEN_HEIGHT;
+		for (int yy = 0; yy < CHR_HEIGHT; yy++) {
+			int yDisplacement = SCREEN_HEIGHT - (y + yy) - 1;
+			u16 *screenPos = screen + xDisplacement + yDisplacement;
+			int bit = (yy * CHR_WIDTH) + xx;
+			if (charData[bit / 32] & (1 << (bit % 32)))
 				*screenPos = color;
-			screenPos += SCREEN_HEIGHT;
 		}
 	}
 }

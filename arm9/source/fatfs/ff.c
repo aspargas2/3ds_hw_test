@@ -19,7 +19,8 @@
 /----------------------------------------------------------------------------*/
 
 
-#include <string.h>
+#include "smalllib.h"
+
 #include "ff.h"			/* Declarations of FatFs API */
 #include "diskio.h"		/* Declarations of device I/O functions */
 
@@ -3481,9 +3482,9 @@ static FRESULT mount_volume (	/* FR_OK(0): successful, !=0: an error occurred */
 
 		/* Determine the FAT sub type */
 		sysect = nrsv + fasize + fs->n_rootdir / (SS(fs) / SZDIRE);	/* RSV + FAT + DIR */
-		if (tsect < sysect) return FR_NO_FILESYSTEM;	/* (Invalid volume size) */
-		nclst = (tsect - sysect) / fs->csize;			/* Number of clusters */
-		if (nclst == 0) return FR_NO_FILESYSTEM;		/* (Invalid volume size) */
+		if (tsect < sysect) return FR_NO_FILESYSTEM;		/* (Invalid volume size) */
+		nclst = (tsect - sysect) >> (31 - clz(fs->csize));	/* Number of clusters */
+		if (nclst == 0) return FR_NO_FILESYSTEM;			/* (Invalid volume size) */
 		fmt = 0;
 		if (nclst <= MAX_FAT32) fmt = FS_FAT32;
 		if (nclst <= MAX_FAT16) fmt = FS_FAT16;

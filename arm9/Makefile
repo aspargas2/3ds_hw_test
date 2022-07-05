@@ -26,7 +26,7 @@ OBJCOPY = arm-none-eabi-objcopy
 all: $(TARGET).bin
 
 $(TARGET).elf: $(OBJS)
-	$(CC) -T link.ld -flto -Wl,--nmagic,--use-blx $^ -o $@ -nostartfiles -specs=nosys.specs -specs=nano.specs
+	$(CC) -T link.ld -flto -Wl,--nmagic,--use-blx $^ -o $@ -nostartfiles -nostdlib
 	#$(CC) -T link.ld -Wl,--nmagic $^ -o $@ -nostartfiles -nostdlib
 
 $(BUILD)/%.o: $(SOURCE)/%.c

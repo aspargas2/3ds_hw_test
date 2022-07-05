@@ -1,6 +1,8 @@
 #include "memtests.h"
 #include <arm.h>
 
+#define UNROLL_COUNT 4
+
 .section .text
 .arm
 
@@ -81,7 +83,10 @@ asm_func memtest_own_address
 	mov r2, r0
 
 	own_address_fill_loop:
+		.rept UNROLL_COUNT
+		@ This gives an assembler warning which I have no idea how to suppress
 		str r2, [r2], #4
+		.endr
 		cmp r2, r12
 		blo own_address_fill_loop
 
@@ -89,10 +94,12 @@ asm_func memtest_own_address
 	mov r1, #0
 
 	own_address_check_loop:
+		.rept UNROLL_COUNT
 		ldr r4, [r2]
 		cmp r2, r4
 		blne memtest_fail_own_address_thunk
 		add r2, #4
+		.endr
 		cmp r2, r12
 		blo own_address_check_loop
 
@@ -102,7 +109,9 @@ asm_func memtest_own_address
 moving_inversions_fill:
 	mov r2, r0
 	moving_inversions_fill_loop:
+		.rept UNROLL_COUNT
 		str r3, [r2], #4
+		.endr
 		cmp r2, r12
 		blo moving_inversions_fill_loop
 	bx lr
@@ -111,10 +120,12 @@ moving_inversions_bottom_up:
 	push {lr}
 	mov r2, r0
 	moving_inversions_bottom_up_loop:
+		.rept UNROLL_COUNT
 		ldr r4, [r2]
 		cmp r3, r4
 		blne memtest_fail
 		str r5, [r2], #4
+		.endr
 		cmp r2, r12
 		blo moving_inversions_bottom_up_loop
 	pop {pc}
@@ -123,11 +134,13 @@ moving_inversions_top_down:
 	push {lr}
 	mov r2, r12
 	moving_inversions_top_down_loop:
+		.rept UNROLL_COUNT
 		sub r2, #4
 		ldr r4, [r2]
 		cmp r3, r4
 		blne memtest_fail
 		str r5, [r2]
+		.endr
 		cmp r2, r0
 		bhi moving_inversions_top_down_loop
 	pop {pc}
@@ -202,9 +215,12 @@ asm_func memtest_bit_fade_check
 	mov r1, #0
 
 	bit_fade_check_loop:
-		ldr r4, [r2], #4
+		.rept UNROLL_COUNT
+		ldr r4, [r2]
 		cmp r3, r4
 		blne memtest_fail
+		add r2, #4
+		.endr
 		cmp r2, r12
 		blo bit_fade_check_loop
 

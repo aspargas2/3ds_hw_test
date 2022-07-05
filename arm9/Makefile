@@ -4,8 +4,8 @@ export COMMIT := $(shell git rev-parse --short HEAD)
 
 SOURCE   = source
 BUILD    = build
-SOURCES  = $(SOURCE) $(SOURCE)/* ../common
-INCLUDES = $(SOURCES)
+INCLUDES = $(SOURCE) ../common
+SOURCES  = $(INCLUDES) $(SOURCE)/*
 
 SFILES  = $(foreach dir, $(SOURCES), $(wildcard $(dir)/*.S))
 CFILES  = $(foreach dir, $(SOURCES), $(wildcard $(dir)/*.c))
@@ -16,18 +16,15 @@ INCLUDE = $(foreach dir, $(INCLUDES), -I$(CURDIR)/$(dir))
 
 ARCH    = -DARM9 -mcpu=arm946e-s -march=armv5te -mthumb -mlittle-endian -mthumb-interwork
 ASFLAGS = $(ARCH) $(COMMON_ARCH) $(INCLUDE)
-CFLAGS  = -DCOMMIT="\"$(COMMIT)\"" -Wall -Wextra -Os -flto $(ARCH) $(INCLUDE) -fno-stack-protector
-
-CC      = arm-none-eabi-gcc
-OBJCOPY = arm-none-eabi-objcopy
+CFLAGS  = -DCOMMIT="\"$(COMMIT)\"" -Wall -Wextra -Os -flto $(ARCH) $(INCLUDE) -fno-stack-protector -fno-builtin
+LDFLAGS = -T link.ld -flto -Wl,--nmagic,--use-blx -nostartfiles -nostdlib
 
 .PHONY: all clean
 
 all: $(TARGET).bin
 
 $(TARGET).elf: $(OBJS)
-	$(CC) -T link.ld -flto -Wl,--nmagic,--use-blx $^ -o $@ -nostartfiles -nostdlib
-	#$(CC) -T link.ld -Wl,--nmagic $^ -o $@ -nostartfiles -nostdlib
+	$(CC) $(LDFLAGS) $^ -o $@
 
 $(BUILD)/%.o: $(SOURCE)/%.c
 	@mkdir -p "$(@D)"

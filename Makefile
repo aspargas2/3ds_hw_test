@@ -10,6 +10,24 @@ ARM11_LOAD  = 0x18100000
 ARM11_ENTRY = $(ARM11_LOAD)
 ARM11_BIN   = arm11/$(TARGET)_arm11.bin
 
+export CC      = arm-none-eabi-gcc
+export OBJCOPY = arm-none-eabi-objcopy
+
+ifeq (, $(shell which $(CC) 2> /dev/null))
+    export USE_DKA = true
+endif
+ifeq (, $(shell which $(OBJCOPY) 2> /dev/null))
+    export USE_DKA = true
+endif
+
+ifeq ($(USE_DKA),true)
+    ifeq ($(strip $(DEVKITARM)),)
+        $(error "Please provide $(CC) and $(OBJCOPY) in PATH, or set DEVKITARM in your environment.")
+    endif
+    $(info Building with DKA)
+    include $(DEVKITARM)/base_tools
+endif
+
 .PHONY: all clean .FORCE
 .FORCE:
 

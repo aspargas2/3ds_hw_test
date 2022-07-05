@@ -4,8 +4,8 @@ export COMMIT := $(shell git rev-parse --short HEAD)
 
 SOURCE   = source
 BUILD    = build
-SOURCES  = $(SOURCE) $(SOURCE)/* ../common
-INCLUDES = $(SOURCES)
+INCLUDES = $(SOURCE) ../common
+SOURCES  = $(INCLUDES) $(SOURCE)/*
 
 SFILES  = $(foreach dir, $(SOURCES), $(wildcard $(dir)/*.S))
 CFILES  = $(foreach dir, $(SOURCES), $(wildcard $(dir)/*.c))
@@ -17,16 +17,18 @@ INCLUDE = $(foreach dir, $(INCLUDES), -I$(CURDIR)/$(dir))
 ARCH    = -DARM11 -march=armv6k -mtune=mpcore -mlittle-endian -marm -mtp=soft
 ASFLAGS = $(ARCH) $(COMMON_ARCH) $(INCLUDE)
 CFLAGS  = -DCOMMIT="\"$(COMMIT)\"" -Wall -Wextra -Os $(ARCH) $(INCLUDE) -fno-stack-protector
+LDFLAGS = -T link.ld -Wl,--nmagic,--use-blx -nostartfiles
 
-CC      = arm-none-eabi-gcc
-OBJCOPY = arm-none-eabi-objcopy
+ifneq (true, $(USE_DKA))
+    LDFLAGS += -specs=nosys.specs -specs=nano.specs
+endif
 
 .PHONY: all clean
 
 all: $(TARGET).bin
 
 $(TARGET).elf: $(OBJS)
-	$(CC) -T link.ld -Wl,--nmagic,--use-blx $^ -o $@ -nostartfiles -specs=nosys.specs -specs=nano.specs
+	$(CC) $(LDFLAGS) $^ -o $@
 
 $(BUILD)/%.o: $(SOURCE)/%.c
 	@mkdir -p "$(@D)"

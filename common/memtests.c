@@ -179,7 +179,7 @@ u64 testMemory(u32 regions, u32 tests) {
 	}
 	#endif
 
-	debugPrintf("Done. %lld total errors detected.\n", totalErrors);
+	debugPrintf("Done. %llu total errors detected.\n", totalErrors);
 
 	return totalErrors;
 }

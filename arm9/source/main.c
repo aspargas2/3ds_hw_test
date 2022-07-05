@@ -59,8 +59,18 @@ int main(/*int argc, char *argv[]*/) {
 	disableAllInterrupts();
 	clearAllInterrupts();
 
+	// If bootroms are unlocked, lock them to unlock FCRAM
+	bool locked = false;
+	u8* sysprot = (void*) 0x10000000; // CFG9_SYSPROT9
+	if (*sysprot == 0) {
+		locked = true;
+		*sysprot = 1;
+		sysprot++; // CFG9_SYSPROT11
+		*sysprot = 1;
+	}
+
+	// Enable Extended ARM9 Memory
 	if (!IS_O3DS)
-		// Enable Extended ARM9 Memory
 		(*(u8*)0x10000200) = 1;
 
 	if ((arm11dead = !bootBarrierWithTimeout()))
@@ -81,6 +91,9 @@ int main(/*int argc, char *argv[]*/) {
 
 	logWriteStr("\n\n\n");
 	logWriteStr(TITLE_STRING);
+
+	if (locked)
+		debugPrint("Note: launched with bootroms unlocked\n");
 
 	if (!arm11dead) {
 		enableInterrupt(PXI_RX_INTERRUPT);

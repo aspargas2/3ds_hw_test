@@ -34,9 +34,9 @@ endif
 all: $(TARGET).firm $(TARGET)_direct.firm
 
 $(TARGET).firm: $(ARM9_BIN) $(ARM11_BIN)
-	firmtool build $@ -n $(ARM9_ENTRY) -e $(ARM11_ENTRY) -D $(ARM9_BIN) $(ARM11_BIN) -A $(ARM9_LOAD) $(ARM11_LOAD) -C NDMA XDMA
+	firmtool build $@ -n $(ARM9_ENTRY) -e $(ARM11_ENTRY) -D $(ARM9_BIN) $(ARM11_BIN) -A $(ARM9_LOAD) $(ARM11_LOAD) -C NDMA XDMA -b
 $(TARGET)_direct.firm: $(ARM9_BIN) $(ARM11_BIN)
-	firmtool build $@ -n $(ARM9_ALT_ENTRY) -e $(ARM11_ENTRY) -D $(ARM9_BIN) $(ARM11_BIN) -A $(ARM9_ALT_LOAD) $(ARM11_LOAD) -C memcpy XDMA
+	firmtool build $@ -n $(ARM9_ALT_ENTRY) -e $(ARM11_ENTRY) -D $(ARM9_BIN) $(ARM11_BIN) -A $(ARM9_ALT_LOAD) $(ARM11_LOAD) -C memcpy XDMA -b
 
 $(ARM9_BIN): .FORCE
 	@$(MAKE) -C arm9

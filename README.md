@@ -11,20 +11,11 @@ tests from [Memtest86+](https://www.memtest.org/).
 
 ## To-Do List / Roadmap
 In very approximate order of priority:
-* Add an ARM11 payload
-  - Remove reliance on whatever is loading the FIRM to initialize the screens
-  - Do FCRAM testing from ARM11 if available; hopefully this will make testing
-go much faster than it currently does with ARM9
-  - The ARM9 payload (running from the TCMs) should still be able to function
-independently if the ARM11 side somehow doesn't get loaded correctly or
-otherwise dies, using the notification LED for status indication
 * Make the memory testing functionality more complete
   - Implement the rest of the memory tests described
 [here](https://www.memtest86.com/tech_individual-test-descr.html), save for
 those which don't really have an equivalent on the 3DS's ARM processors
   - Further optimize, clean up, and comment the current testing code
-  - Test the New3DS-exclusive extensions of FCRAM and ARM9 Internal Memory,
-if the tester is running on a "new" model
 * Totally revamp the UI, as the current one is dirt simple
   - Allow selecting specifc tests to run on specific memory regions
   - Allow selecting a number of passes to run
@@ -34,9 +25,9 @@ pattern, etc.
 * Probably some other stuff I have in mind but forgot
 
 ## How to Build This
-Building requires `arm-none-eabi-gcc`, `arm-none-eabi-objcpy`, and
-[firmtool](https://github.com/TuxSH/firmtool). With those installed, just
-run `make`.
+Building requires [firmtool](https://github.com/TuxSH/firmtool), and either 
+`arm-none-eabi-gcc` and `arm-none-eabi-objcpy` in path or DevkitARM installed.
+Then, just run `make`.
 
 ## License
 You may use this under the terms of the GNU General Public License GPL v2 or

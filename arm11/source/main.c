@@ -26,8 +26,8 @@
 static u32 wait_any_key_pressed()
 {
 	u32 pad;
-	while (~HID_PAD & BUTTON_NONE);
-	while (!((pad = ~HID_PAD) & BUTTON_NONE));
+	while (~HID_PAD & BUTTON_NONE) ARM_WFI();
+	while (!((pad = ~HID_PAD) & BUTTON_NONE)) ARM_WFI();
 	return pad;
 }
 

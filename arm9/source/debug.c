@@ -64,7 +64,7 @@ void logDebugPrintf(bool logOnly, const char* format, ...) {
 					format++;
 					continue;
 				case 's':
-					debugNPrint(logOnly, va_arg(args, char*), -1);
+					debugNPrint(logOnly, va_arg(args, const char*), -1);
 					format += 2;
 					continue;
 				case 'd': {

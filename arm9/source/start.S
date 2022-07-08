@@ -109,7 +109,7 @@ asm_func _start
 	@ Copy entire binary to ITCM
 	adr r0, xrqVectorTable
 	mov r1, #xrqVectorTable
-	ldr r2, =__loaded_size
+	ldr r2, =__loaded_len
 	ldr lr, =relocate_done
 	ldr pc, =bfnMemcpy32
 
@@ -144,7 +144,7 @@ asm_func _start
 	@ Clear BSS
 	mov r0, #0
 	ldr r1, =__bss_start
-	ldr r2, =__bss_size
+	ldr r2, =__bss_len
 	bl bfnMemset32
 
 	mov r0, r9

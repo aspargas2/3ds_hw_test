@@ -65,14 +65,14 @@ void bfnInvalidateDCacheRange(void* start, u32 len);
 void bfnWritebackDCacheRange(void* start, u32 len);
 void bfnWritebackInvalidateDCacheRange(void* start, u32 len);
 
-void bfnDataSynchronizationBarrier();
+void bfnDataSynchronizationBarrier(void);
 
 bool bfnEnableICache(void);
 bool bfnDisableICache(void);
 bool bfnSetICache(bool enable);
 
 // also invalidates the branch target cache on ARM11
-void bfnInvalidateICache();
+void bfnInvalidateICache(void);
 
 // WARNING: DOES NOT INVALIDATE THE BRANCH TARGET CACHE ON ARM11
 // NEEDS TO INVALIDATE IT AND FLUSH THE PREFETCH BUFFER

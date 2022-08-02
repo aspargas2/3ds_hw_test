@@ -87,7 +87,7 @@ void __attribute__((noreturn)) MainLoop(void)
 		mcuPoweroff();
 	}
 
-	testMemory(ALL_MEMTEST_REGIONS, ALL_MEMTESTS);
+	testMemory(ALL_MEMTEST_REGIONS, ALL_MEMTESTS, true);
 
 	consolePrint("Press any button to power off.\n");
 	wait_any_key_pressed();

@@ -65,6 +65,6 @@ typedef struct {
 _Static_assert(ERROR_STRUCT_SIZE == sizeof(MemtestError));
 
 // Returns total errors detected
-u64 testMemory(u32 regions, u32 tests);
+u64 testMemory(u32 regions, u32 tests, bool showFinal);
 
 #endif //__ASSEMBLER__

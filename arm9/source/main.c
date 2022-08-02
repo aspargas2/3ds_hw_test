@@ -111,7 +111,7 @@ int main(/*int argc, char *argv[]*/) {
 
 				case PXICMD_RUN_MEMTEST: {
 					u64* totalErrorsAddr = (u64*) dequeuePxicmd();
-					*totalErrorsAddr = testMemory(dequeuePxicmd(), dequeuePxicmd());
+					*totalErrorsAddr = testMemory(dequeuePxicmd(), dequeuePxicmd(), false);
 					//ARM_BKPT();
 					break;
 				}
@@ -143,7 +143,7 @@ int main(/*int argc, char *argv[]*/) {
 		}
 
 		I2C_writeReg(I2C_DEV_CTR_MCU, 0x29, 1);
-		testMemory(ALL_MEMTEST_REGIONS, ALL_MEMTESTS);
+		testMemory(ALL_MEMTEST_REGIONS, ALL_MEMTESTS, true);
 		I2C_writeReg(I2C_DEV_CTR_MCU, 0x29, 6);
 
 		debugPrint("Deinitializing SD log... ");

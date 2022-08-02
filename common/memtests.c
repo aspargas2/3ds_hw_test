@@ -97,7 +97,7 @@ static bool checkBitFade(u32 maxRegion) {
 	return ret;
 }
 
-u64 testMemory(u32 regions, u32 tests) {
+u64 testMemory(u32 regions, u32 tests, bool showFinal) {
 	totalErrors = 0;
 
 	#ifndef ARM9
@@ -179,7 +179,8 @@ u64 testMemory(u32 regions, u32 tests) {
 	}
 	#endif
 
-	debugPrintf("Done. %llu total errors detected.\n", totalErrors);
+	if (showFinal)
+		debugPrintf("Done. %llu total errors detected.\n", totalErrors);
 
 	return totalErrors;
 }

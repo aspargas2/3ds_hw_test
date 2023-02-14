@@ -26,7 +26,7 @@ pattern, etc.
 
 ## How to Build This
 Building requires [firmtool](https://github.com/TuxSH/firmtool), and either 
-`arm-none-eabi-gcc` and `arm-none-eabi-objcpy` in path or DevkitARM installed.
+`arm-none-eabi-gcc` and `arm-none-eabi-objcopy` in path or DevkitARM installed.
 Then, just run `make`.
 
 ## License
